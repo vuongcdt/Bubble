@@ -43,6 +43,7 @@ export class HexGrid extends BaseComponent {
 
                 const bubble = hex.getComponent(Bubble);
                 bubble.setType(randomRangeInt(0, 4));
+                bubble.name = `${row}-${col}`;
 
                 if (row == this._rows - 1 && col == 0) {
                     this._store.endBubble = bubble;

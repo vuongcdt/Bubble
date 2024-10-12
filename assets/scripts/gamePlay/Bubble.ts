@@ -1,4 +1,4 @@
-import { _decorator, CircleCollider2D, Collider2D, Color, Component, Contact2DType, ERigidBody2DType, Input, input, IPhysics2DContact, Node, RigidBody2D, Sprite, tween, Vec2, Vec3 } from 'cc';
+import { _decorator, CircleCollider2D, Collider2D, Color, Component, Contact2DType, ERigidBody2DType, Input, input, IPhysics2DContact, Node, randomRangeInt, RigidBody2D, Sprite, tween, Vec2, Vec3 } from 'cc';
 import { BubbleType } from '../Enum';
 import { BaseComponent } from './BaseComponent';
 import { eventTarget } from '../Utils';
@@ -7,13 +7,14 @@ const { ccclass, property } = _decorator;
 
 @ccclass('Bubble')
 export class Bubble extends BaseComponent {
-    private _type: BubbleType;
 
+    private _neighbors: Bubble[] = [];
+    private _type: BubbleType;
     private _collider: CircleCollider2D;
     private _rigibody: RigidBody2D;
     private _colors: Color[] = [Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW];
-    private _neighbors: Bubble[] = [];
     private _isChain: boolean = false;
+    private _isPhysic: boolean = false;
 
     start() {
         super.start();
@@ -21,20 +22,36 @@ export class Bubble extends BaseComponent {
         this._rigibody = this.getComponent(RigidBody2D);
         if (this._collider) {
             this._collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
-            this._collider.on(Contact2DType.END_CONTACT, this.onEndContact, this);
         }
 
         this.node.on(Node.EventType.TOUCH_START, this.onTouchStart, this);
         eventTarget.on(UN_CHAIN, this.onUnChain, this);
         eventTarget.on(DROP, this.onDrop, this);
-        eventTarget.on(OFF_PHYSICS, () => this.togglePhysics(false), this);
-        eventTarget.on(ON_PHYSICS, () => this.togglePhysics(true), this);
+
+        setTimeout(() => {
+            // this._rigibody.type = ERigidBody2DType.Static;
+            // this._rigibody.enabled = false;
+            // this._collider.enabled = false;
+            this._isPhysic = true;
+        }, 1000);
     }
 
     onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
+        if (this._isPhysic) {
+            const bubble = otherCollider.getComponent(Bubble);
+
+            if (bubble) {
+                this._rigibody.linearVelocity = Vec2.ZERO;
+                const distance = Vec3.distance(this.node.position, otherCollider.node.position)
+                console.log(bubble.name, this.node.position, otherCollider.node.position);
+
+            }
+        }
+
         if (!otherCollider) {
             return;
         }
+
         const otherBubble = otherCollider.getComponent(Bubble);
         if (otherBubble && !this._neighbors.includes(otherBubble)) {
             this._neighbors.push(otherBubble);
@@ -47,7 +64,7 @@ export class Bubble extends BaseComponent {
         }
         const otherBubble = otherCollider.getComponent(Bubble);
         if (otherBubble) {
-            this._neighbors = this._neighbors.filter(b => b != otherBubble);
+            this._neighbors = this._neighbors.filter(neighbor => neighbor != otherBubble);
         }
     }
 
@@ -57,48 +74,53 @@ export class Bubble extends BaseComponent {
     }
 
     onTouchStart() {
+        console.log('onTouchStart');
+
         this._store.sameType = [];
         this._store.neighbors = [];
         eventTarget.emit(UN_CHAIN);
 
-        this._neighbors
-            .filter(b => b._type == this._type)
-            .forEach(b => b.findNeighbors());
+        this.findNeighborsSameType();
+        this._store.endBubble.onChain();
 
         setTimeout(() => {
-            // eventTarget.emit(ON_PHYSICS);
-            this._store.endBubble.onChain();
             eventTarget.emit(DROP);
-            // eventTarget.emit(OFF_PHYSICS);
-        }, 500);
+        }, 0);
     }
 
-    findNeighbors() {
+    findNeighborsSameType() {
         this._store.sameType.push(this);
+        this.clearBubbleInNeighborsOfDifferentTypeBubble();
 
         this._neighbors
-            .filter(b => b._type == this._type && !this._store.sameType.includes(b))
-            .forEach(b => b.findNeighbors());
+            .filter(neighbor => neighbor._type == this._type && !this._store.sameType.includes(neighbor))
+            .forEach(neighbor => neighbor.findNeighborsSameType());
 
-        const position = this.node.position;
-        const newPos = new Vec3(position.x, -1000);
-
-        tween(this.node).to(1, { position: newPos })
-            // .destroySelf()
+        tween(this.node)
+            .to(1, { position: this.getPosTarget() })
             .call(() => this.node.destroy())
             .start();
-        // console.log('name', this.name);
+    }
+
+    clearBubbleInNeighborsOfDifferentTypeBubble() {
+        this._neighbors
+            .filter(neighbor => neighbor._type != this._type)
+            .forEach(neighbor => neighbor._neighbors = neighbor._neighbors?.filter(i => i != this));
     }
 
     onChain() {
         this._isChain = true;
-        this._store.neighbors.push(this);
+        if (!this._store?.neighbors) {
+            return;
+        }
+
+        if (!this._store?.neighbors.includes(this)) {
+            this._store.neighbors.push(this);
+        }
 
         this._neighbors
-            .filter(b => !this._store.neighbors.includes(b))
-            .forEach(b => b.onChain());
-
-        // console.log('onChain', this.name);
+            .filter(neighbor => !this._store.neighbors.includes(neighbor))
+            .forEach(neighbor => neighbor.onChain());
     }
 
     onDrop() {
@@ -106,12 +128,7 @@ export class Bubble extends BaseComponent {
             return;
         }
 
-        // console.log('onDrop',this.name);
-
-        const position = this.node.position;
-        const newPos = new Vec3(position.x, -1000);
-        tween(this.node).to(1, { position: newPos })
-            // .destroySelf()
+        tween(this.node).to(1, { position: this.getPosTarget() })
             .call(() => this.node.destroy())
             .start();
     }
@@ -120,12 +137,8 @@ export class Bubble extends BaseComponent {
         this._isChain = false;
     }
 
-    togglePhysics(isActive: boolean) {
-        // this._rigibody.enabled = isActive;
-        // this._collider.enabled = isActive;
-        this._rigibody.type = isActive
-            ? ERigidBody2DType.Kinematic
-            : ERigidBody2DType.Static;
+    getPosTarget() {
+        return new Vec3(this.node.position.x + randomRangeInt(-200, 200), randomRangeInt(-500, -1000));
     }
 }
 

@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Vec3, Prefab, instantiate, Label, randomRange, randomRangeInt } from 'cc';
+import { _decorator, Component, Node, Vec3, Prefab, instantiate, Label, randomRange, randomRangeInt, Graphics } from 'cc';
 import { Bubble } from './Bubble';
 import { BubbleType } from '../Enum';
 import { BaseComponent } from './BaseComponent';
@@ -38,7 +38,7 @@ export class HexGrid extends BaseComponent {
                 const hex = instantiate(this.hexPrefab);
                 hex.setPosition(new Vec3(x, y));
                 this.node.addChild(hex);
-                
+
                 hex.getComponentInChildren(Label).string = `${row}-${col}`;
                 hex.name = `bubble ${row}-${col}`;
 

@@ -1,4 +1,4 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Graphics, Node } from 'cc';
 import { Bubble } from './gamePlay/Bubble';
 const { ccclass, property } = _decorator;
 
@@ -9,7 +9,7 @@ export default class Store {
     public sameType: Bubble[] = [];
     public neighbors: Bubble[] = [];
     public endBubble: Bubble;
-
+    public graphics: Graphics;
 
     private constructor() { }
 

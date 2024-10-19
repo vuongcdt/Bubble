@@ -1,4 +1,4 @@
-import { _decorator, Camera, Component, director, EventMouse, EventTouch, input, Input, instantiate, Node, Prefab, RigidBody2D, UITransform, Vec2, Vec3 } from 'cc';
+import { _decorator, Camera, Color, Component, director, EventMouse, EventTouch, input, Input, instantiate, math, Node, Prefab, randomRangeInt, RigidBody2D, UITransform, Vec2, Vec3 } from 'cc';
 import { Bubble } from './Bubble';
 const { ccclass, property } = _decorator;
 
@@ -13,9 +13,10 @@ export class Cannon extends Component {
     @property(Prefab)
     bubblePrefab: Prefab = null;
 
-    systems: any = []
-    gunAngle: number = 0;
-    velocity: Vec2 = Vec2.ZERO;
+    _systems: any = []
+    _gunAngle: number = 0;
+    _velocity: Vec2 = Vec2.ZERO;
+    _type: number = 0;
 
     start() {
         input.on(Input.EventType.MOUSE_MOVE, this.onMouseMove, this)
@@ -30,15 +31,14 @@ export class Cannon extends Component {
         let mouseInNode = new Vec3();
         this.node.getComponent(UITransform).convertToNodeSpaceAR(mousePosWorld, mouseInNode);
 
+        Vec3.add(mouseInNode, mouseInNode, this.node.position);
+
         const direction = new Vec2(mouseInNode.x - this.node.position.x, mouseInNode.y - this.node.position.y);
-
-        const angle = Math.atan2(direction.y, direction.x);
-
-        const angleInDegrees = angle * (180 / Math.PI) - 90;
+        const angleInDegrees = math.toDegree(Math.atan2(direction.y, direction.x)) - 90;
 
         this.gun.angle = angleInDegrees;
-        this.gunAngle = angleInDegrees;
-        this.velocity = direction;
+        this._gunAngle = angleInDegrees;
+        this._velocity = direction.clone().normalize().multiplyScalar(50);
     }
 
     onTouchEnd() {
@@ -47,8 +47,19 @@ export class Cannon extends Component {
         bubble.position = this.node.position;
 
         bubble.name = 'bubble-shoot';
+        const newBubble = bubble.getComponent(Bubble);
 
-        bubble.getComponent(RigidBody2D).linearVelocity = this.velocity.clone().normalize().multiplyScalar(20);
+        newBubble.setType(this._type);
+        newBubble.setVeloccitry(this._velocity);
+        newBubble.isShoot = true;
+
+        this._type = this.getType();
+
+        console.log('NEXT BUBBLE ', ['RED', 'GREEN', 'BLUE', 'YELLOW'][this._type]);
+    }
+
+    getType(): number {
+        return randomRangeInt(0, 4);
     }
 }
 

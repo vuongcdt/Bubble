@@ -38,19 +38,18 @@ export class HexGrid extends BaseComponent {
                 const hex = instantiate(this.hexPrefab);
                 hex.setPosition(new Vec3(x, y));
                 this.node.addChild(hex);
+                
                 hex.getComponentInChildren(Label).string = `${row}-${col}`;
-                hex.name = `${row}-${col}`;
+                hex.name = `bubble ${row}-${col}`;
 
                 const bubble = hex.getComponent(Bubble);
                 bubble.setType(randomRangeInt(0, 4));
-                bubble.name = `${row}-${col}`;
+                bubble.name = `bubble ${row}-${col}`;
 
                 if (row == this._rows - 1 && col == 0) {
                     this._store.endBubble = bubble;
                 }
             }
         }
-
-        // eventTarget.emit(OFF_PHYSICS);
     }
 }

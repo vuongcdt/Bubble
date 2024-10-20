@@ -67,16 +67,15 @@ export class Bubble extends BaseComponent {
         this._neighbors.push(otherBubble);
         this._rigibody.linearVelocity = Vec2.ZERO;
 
-        if (this.node.name == 'bubble-shoot') {
-            console.log(this._neighbors.length);
-            console.log(this.name, COLORS_TEXT[this._type], otherBubble.name, COLORS_TEXT[otherBubble._type]);
-        }
+        // if (this.node.name == 'bubble-shoot') {
+        //     console.log('this._neighbors.length', this._neighbors.length);
+        //     console.log(this.name, COLORS_TEXT[this._type], otherBubble.name, COLORS_TEXT[otherBubble._type]);
+        // }
 
         if (this.node.name != 'bubble-shoot' || !this._isShoot) {
             return;
         }
 
-        this._isShoot = false;
         const p1 = otherBubble.node.position;
         const p2 = this.node.position;
 
@@ -102,7 +101,9 @@ export class Bubble extends BaseComponent {
     setPosition(posNeighbor: Vec3, offsetPos: Vec3) {
         setTimeout(() => {
             this.node.position = new Vec3(posNeighbor.x - offsetPos.x, posNeighbor.y - offsetPos.y);
-            this.checkChain();
+            setTimeout(() => {
+                this.checkChain();
+            }, 50);
         }, 0);
     }
 
@@ -136,13 +137,13 @@ export class Bubble extends BaseComponent {
     }
 
     checkChain() {
-        // this._store.sameType = [];
+        this._isShoot = false;
+        this._store.sameType = [];
         this._store.neighbors = [];
         eventTarget.emit(UN_CHAIN);
-
+        
+        // console.log('this._store.sameType', this._store.sameType);
         this.findNeighborsSameType();
-
-        console.log('this._store.sameType', this._store.sameType);
 
         setTimeout(() => {
             this._store.endBubble.onChain();
@@ -189,6 +190,8 @@ export class Bubble extends BaseComponent {
         }
 
         if (this._store.sameType.length < 3) {
+            // console.log('sameType.length < 3');
+            
             return;
         }
 
@@ -197,7 +200,7 @@ export class Bubble extends BaseComponent {
             .forEach(neighborBubble => neighborBubble.clearBubbleInNeighborsOfDifferentTypeBubble(this));
 
         tween(this.node)
-            .to(1, { position: this.getPosTarget() })
+            .to(0.5, { position: this.getPosTarget() })
             .removeSelf()
             .start();
     }

@@ -1,6 +1,7 @@
 import { _decorator, Camera, Color, EventMouse, EventTouch, Graphics, input, Input, instantiate, math, Node, Prefab, randomRangeInt, Sprite, UITransform, Vec2, Vec3 } from 'cc';
 import { Bubble } from './Bubble';
 import { BaseComponent } from './BaseComponent';
+import { COLORS } from '../CONSTANTS';
 const { ccclass, property } = _decorator;
 
 @ccclass('Cannon')
@@ -16,12 +17,9 @@ export class Cannon extends BaseComponent {
     @property(Sprite)
     private spriteNextBubble: Sprite;
 
-    private _systems: any = []
-    private _gunAngle: number = 0;
     private _velocity: Vec2 = Vec2.ZERO;
     private _type: number = 0;
     private _graphics: Graphics;
-    private _colors: Color[] = [Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW];
 
     start() {
         super.start();
@@ -43,7 +41,6 @@ export class Cannon extends BaseComponent {
         const angleInDegrees = math.toDegree(Math.atan2(mouseInNode.y, mouseInNode.x)) - 90;
 
         this.gun.angle = angleInDegrees;
-        this._gunAngle = angleInDegrees;
         this._velocity = new Vec2(mouseInNode.x, mouseInNode.y).normalize().multiplyScalar(100);
 
         this._graphics.clear();
@@ -65,7 +62,7 @@ export class Cannon extends BaseComponent {
 
     setNextBubble() {
         this._type = randomRangeInt(0, 4);
-        this.spriteNextBubble.color = this._colors[this._type];
+        this.spriteNextBubble.color = COLORS[this._type];
     }
 
     drawLine(source: Vec3, target: Vec3) {

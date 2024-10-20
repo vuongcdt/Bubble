@@ -1,9 +1,6 @@
 import { _decorator, Component, Node, Vec3, Prefab, instantiate, Label, randomRange, randomRangeInt, Graphics } from 'cc';
 import { Bubble } from './Bubble';
-import { BubbleType } from '../Enum';
 import { BaseComponent } from './BaseComponent';
-import { eventTarget } from '../Utils';
-import { OFF_PHYSICS } from '../Events';
 const { ccclass, property } = _decorator;
 
 @ccclass('HexGrid')
@@ -53,10 +50,10 @@ export class HexGrid extends BaseComponent {
                 }
             }
         }
-
+ 
         setTimeout(() => {
             this._store.bubbles.forEach(bubble => {
-                bubble.setPhjysicStatic();
+                bubble.setPhysicStatic();
             });
         }, 0);
     }

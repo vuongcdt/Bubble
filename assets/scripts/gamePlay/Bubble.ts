@@ -5,6 +5,7 @@ import { eventTarget } from '../Utils';
 import { DROP, UN_CHAIN } from '../Events';
 import { Wall } from './Wall';
 import Store from '../Store';
+import { COLORS, COLORS_TEXT } from '../CONSTANTS';
 const { ccclass, property } = _decorator;
 
 @ccclass('Bubble')
@@ -17,14 +18,13 @@ export class Bubble extends BaseComponent {
     private _type: BubbleType;
     private _collider: CircleCollider2D;
     private _rigibody: RigidBody2D;
-    private _colors: Color[] = [Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW];
     private _isChain: boolean = false;
     private _velocity: Vec2 = Vec2.ZERO;
     private _neighborPosList: Vec3[] = [
         new Vec3(83.13843876330611, 0),
+        new Vec3(-83.13843876330611, 0),
         new Vec3(41.569219381653056, 72),
         new Vec3(-41.569219381653056, 72),
-        new Vec3(-83.13843876330611, 0),
         new Vec3(-41.569219381653056, -72),
         new Vec3(41.569219381653056, -72),
     ];
@@ -42,7 +42,7 @@ export class Bubble extends BaseComponent {
             this._collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
         }
 
-        this.node.on(Node.EventType.TOUCH_START, this.checkChain, this);
+        // this.node.on(Node.EventType.TOUCH_START, this.checkChain, this);
         eventTarget.on(UN_CHAIN, this.onUnChain, this);
         eventTarget.on(DROP, this.onDrop, this);
     }
@@ -67,26 +67,43 @@ export class Bubble extends BaseComponent {
         this._neighbors.push(otherBubble);
         this._rigibody.linearVelocity = Vec2.ZERO;
 
-        if (this._neighbors.length == 1 && this._isShoot) {
-            this._isShoot = false;
-            const p1 = otherBubble.node.position;
-            const p2 = this.node.position;
+        if (this.node.name == 'bubble-shoot') {
+            console.log(this._neighbors.length);
+            console.log(this.name, COLORS_TEXT[this._type], otherBubble.name, COLORS_TEXT[otherBubble._type]);
+        }
 
-            const subtract = new Vec3(p1.x - p2.x, p1.y - p2.y);
-            const angle = this.getAngle(subtract);
+        if (this.node.name != 'bubble-shoot' || !this._isShoot) {
+            return;
+        }
 
-            for (const pos of this._neighborPosList) {
-                const anglePos = this.getAngle(pos);
+        this._isShoot = false;
+        const p1 = otherBubble.node.position;
+        const p2 = this.node.position;
 
-                if (angle <= anglePos + 30 && angle > anglePos - 30) {
-                    setTimeout(() => {
-                        this.node.position = new Vec3(p1.x - pos.x, p1.y - pos.y);
-                        this.checkChain();
-                    }, 0);
-                    break;
-                }
+        const subtract = new Vec3(p1.x - p2.x, p1.y - p2.y);
+        const angle = this.getAngle(subtract);
+
+        for (let index = 0; index < this._neighborPosList.length; index++) {
+            const offsetPos = this._neighborPosList[index];
+            const anglePos = this.getAngle(offsetPos);
+
+            if (index < 2 && angle <= anglePos + 45 && angle > anglePos - 45) {
+                this.setPosition(p1, offsetPos)
+                break;
+            }
+
+            if (angle <= anglePos + 30 && angle > anglePos - 30) {
+                this.setPosition(p1, offsetPos)
+                break;
             }
         }
+    }
+
+    setPosition(posNeighbor: Vec3, offsetPos: Vec3) {
+        setTimeout(() => {
+            this.node.position = new Vec3(posNeighbor.x - offsetPos.x, posNeighbor.y - offsetPos.y);
+            this.checkChain();
+        }, 0);
     }
 
     onEndContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
@@ -115,21 +132,21 @@ export class Bubble extends BaseComponent {
 
     setType(type: BubbleType) {
         this._type = type;
-        this.getComponentInChildren(Sprite).color = this._colors[type];
+        this.getComponentInChildren(Sprite).color = COLORS[type];
     }
 
     checkChain() {
-        this._store.sameType = [];
+        // this._store.sameType = [];
         this._store.neighbors = [];
         eventTarget.emit(UN_CHAIN);
 
         this.findNeighborsSameType();
 
-        // this._store.endBubble.onChain();
+        console.log('this._store.sameType', this._store.sameType);
 
         setTimeout(() => {
             this._store.endBubble.onChain();
-        }, 0);
+        }, 100);
 
         setTimeout(() => {
             eventTarget.emit(DROP);
@@ -138,10 +155,6 @@ export class Bubble extends BaseComponent {
 
     findNeighborsSameType() {
         this._store.sameType.push(this);
-
-        // this._neighbors
-        //     .filter(neighborBubble => neighborBubble._type != this._type)
-        //     .forEach(neighborBubble => neighborBubble.clearBubbleInNeighborsOfDifferentTypeBubble(this));
 
         this._neighbors
             .filter(neighborBubble => neighborBubble._type == this._type && !this._store.sameType.includes(neighborBubble))
@@ -182,14 +195,14 @@ export class Bubble extends BaseComponent {
         this._neighbors
             .filter(neighborBubble => neighborBubble._type != this._type)
             .forEach(neighborBubble => neighborBubble.clearBubbleInNeighborsOfDifferentTypeBubble(this));
-            
+
         tween(this.node)
             .to(1, { position: this.getPosTarget() })
             .removeSelf()
             .start();
     }
 
-    setPhjysicStatic(){
+    setPhysicStatic() {
         this._rigibody.type = ERigidBody2DType.Static;
     }
 
@@ -201,7 +214,7 @@ export class Bubble extends BaseComponent {
     getPosTarget() {
         return new Vec3(this.node.position.x + randomRangeInt(-200, 200), randomRangeInt(-500, -1000));
     }
-    
+
     getAngle(direction: Vec3): number {
         const angle = math.toDegree(Math.atan2(direction.y, direction.x)) - 90;
         return angle;

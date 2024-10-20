@@ -1,4 +1,4 @@
-import { _decorator, Camera, Color, Component, director, EventMouse, EventTouch, Graphics, input, Input, instantiate, math, Node, Prefab, randomRangeInt, RigidBody2D, UITransform, Vec2, Vec3 } from 'cc';
+import { _decorator, Camera, Color, EventMouse, EventTouch, Graphics, input, Input, instantiate, math, Node, Prefab, randomRangeInt, Sprite, UITransform, Vec2, Vec3 } from 'cc';
 import { Bubble } from './Bubble';
 import { BaseComponent } from './BaseComponent';
 const { ccclass, property } = _decorator;
@@ -13,12 +13,15 @@ export class Cannon extends BaseComponent {
     gun: Node = null;
     @property(Prefab)
     bubblePrefab: Prefab = null;
+    @property(Sprite)
+    private spriteNextBubble: Sprite;
 
-    _systems: any = []
-    _gunAngle: number = 0;
-    _velocity: Vec2 = Vec2.ZERO;
-    _type: number = 0;
-    _graphics: Graphics;
+    private _systems: any = []
+    private _gunAngle: number = 0;
+    private _velocity: Vec2 = Vec2.ZERO;
+    private _type: number = 0;
+    private _graphics: Graphics;
+    private _colors: Color[] = [Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW];
 
     start() {
         super.start();
@@ -26,6 +29,8 @@ export class Cannon extends BaseComponent {
         input.on(Input.EventType.TOUCH_MOVE, this.onMouseMove, this);
         input.on(Input.EventType.TOUCH_END, this.onTouchEnd, this);
         this._graphics = this.getComponent(Graphics);
+
+        this.setNextBubble();
     }
 
     onMouseMove(e: EventMouse | EventTouch) {
@@ -53,17 +58,14 @@ export class Cannon extends BaseComponent {
         bubble.name = 'bubble-shoot';
         const newBubble = bubble.getComponent(Bubble);
 
-        newBubble.setType(this._type);
-        newBubble.setVeloccitry(this._velocity);
-        newBubble.isShoot = true;
+        newBubble.initShoot(this._type,this._velocity);
 
-        this._type = this.getType();
-
-        console.log('NEXT BUBBLE ', ['RED', 'GREEN', 'BLUE', 'YELLOW'][this._type]);
+        this.setNextBubble();
     }
 
-    getType(): number {
-        return randomRangeInt(0, 4);
+    setNextBubble() {
+        this._type = randomRangeInt(0, 4);
+        this.spriteNextBubble.color = this._colors[this._type];
     }
 
     drawLine(source: Vec3, target: Vec3) {

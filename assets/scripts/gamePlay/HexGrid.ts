@@ -40,7 +40,7 @@ export class HexGrid extends BaseComponent {
                 this.node.addChild(hex);
 
                 hex.getComponentInChildren(Label).string = `${row}-${col}`;
-                hex.name = `bubble ${row}-${col}`;
+                hex.name = `bubble: ${row}-${col}`;
 
                 const bubble = hex.getComponent(Bubble);
                 bubble.setType(randomRangeInt(0, 4));

@@ -44,7 +44,7 @@ export class Cannon extends BaseComponent {
 
         this.gun.angle = angleInDegrees;
         this._gunAngle = angleInDegrees;
-        this._velocity = new Vec2(mouseInNode.x, mouseInNode.y).normalize().multiplyScalar(50);
+        this._velocity = new Vec2(mouseInNode.x, mouseInNode.y).normalize().multiplyScalar(100);
 
         this._graphics.clear();
         this.drawLine(Vec3.ZERO, mouseInNode);

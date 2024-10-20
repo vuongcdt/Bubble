@@ -87,12 +87,6 @@ export class Bubble extends BaseComponent {
                 }
             }
         }
-
-        // if (this._neighbors.length == 6) {
-        //     setTimeout(() => {
-        //         this._rigibody.type = ERigidBody2DType.Static;
-        //     }, 0);
-        // }
     }
 
     onEndContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
@@ -106,10 +100,6 @@ export class Bubble extends BaseComponent {
         }
 
         this._neighbors = this._neighbors.filter(neighborBubble => neighborBubble != otherBubble);
-
-        // if (this._neighbors.length < 6) {
-        //     this._rigibody.type = ERigidBody2DType.Kinematic;
-        // }
     }
 
     initShoot(type: BubbleType, velocity: Vec2) {
@@ -143,15 +133,15 @@ export class Bubble extends BaseComponent {
 
         setTimeout(() => {
             eventTarget.emit(DROP);
-        }, 1000);
+        }, 200);
     }
 
     findNeighborsSameType() {
         this._store.sameType.push(this);
 
-        this._neighbors
-            .filter(neighborBubble => neighborBubble._type != this._type)
-            .forEach(neighborBubble => neighborBubble.clearBubbleInNeighborsOfDifferentTypeBubble(this));
+        // this._neighbors
+        //     .filter(neighborBubble => neighborBubble._type != this._type)
+        //     .forEach(neighborBubble => neighborBubble.clearBubbleInNeighborsOfDifferentTypeBubble(this));
 
         this._neighbors
             .filter(neighborBubble => neighborBubble._type == this._type && !this._store.sameType.includes(neighborBubble))
@@ -189,10 +179,18 @@ export class Bubble extends BaseComponent {
             return;
         }
 
+        this._neighbors
+            .filter(neighborBubble => neighborBubble._type != this._type)
+            .forEach(neighborBubble => neighborBubble.clearBubbleInNeighborsOfDifferentTypeBubble(this));
+            
         tween(this.node)
             .to(1, { position: this.getPosTarget() })
             .removeSelf()
             .start();
+    }
+
+    setPhjysicStatic(){
+        this._rigibody.type = ERigidBody2DType.Static;
     }
 
     onUnChain() {

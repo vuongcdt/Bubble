@@ -46,10 +46,18 @@ export class HexGrid extends BaseComponent {
                 bubble.setType(randomRangeInt(0, 4));
                 bubble.name = `bubble ${row}-${col}`;
 
+                this._store.bubbles.push(bubble);
+
                 if (row == this._rows - 1 && col == 0) {
                     this._store.endBubble = bubble;
                 }
             }
         }
+
+        setTimeout(() => {
+            this._store.bubbles.forEach(bubble => {
+                bubble.setPhjysicStatic();
+            });
+        }, 0);
     }
 }

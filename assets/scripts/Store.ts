@@ -8,6 +8,7 @@ export default class Store {
 
     public sameType: Bubble[] = [];
     public neighbors: Bubble[] = [];
+    public bubbles: Bubble[] = [];
     public endBubble: Bubble;
     public graphics: Graphics;
 

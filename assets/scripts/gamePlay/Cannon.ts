@@ -80,9 +80,10 @@ export class Cannon extends BaseComponent {
 
         if (results.length > 0) {
             const posWorld = new Vec3(results[0].point.x, results[0].point.y);
-            const pointPosNode = new Vec3();
-            this.node.getComponent(UITransform).convertToNodeSpaceAR(posWorld, pointPosNode);
-            this.point.position = pointPosNode.clone().add(this.node.position);
+            const pointPosNode = this.node.getComponent(UITransform).convertToNodeSpaceAR(posWorld);
+
+            this.point.position = pointPosNode.add(this.node.position);
+
             console.log(`pos node: ${pointPosNode} ${results[0].collider.node.name}`);
         } else {
             console.log('Không có va chạm');

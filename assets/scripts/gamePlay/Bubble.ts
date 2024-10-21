@@ -56,7 +56,8 @@ export class Bubble extends BaseComponent {
         const wall = otherCollider.getComponent(Wall);
 
         if (wall && this._isShoot) {
-            this._rigibody.linearVelocity = new Vec2(-this._velocity.x, this._velocity.y);
+            this._velocity = new Vec2(-this._velocity.x, this._velocity.y);
+            this._rigibody.linearVelocity = this._velocity;
             return;
         }
 

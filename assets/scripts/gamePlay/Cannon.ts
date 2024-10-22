@@ -18,6 +18,8 @@ export class Cannon extends BaseComponent {
     private spriteNextBubble: Sprite;
     @property(Node)
     point: Node = null;
+    @property(Node)
+    canvas: Node = null;
 
     private _velocity: Vec2 = Vec2.ZERO;
     private _type: number = 0;
@@ -38,7 +40,10 @@ export class Cannon extends BaseComponent {
         this.setNextBubble();
 
         this._canonWorldPos = this.getWorldPosFromNodePos(this.node.position);
-        console.log('Tọa độ thế giới của node:', this._canonWorldPos);
+        console.log('canvas', this.canvas.position);
+        // console.log(this.getWorldPosFromNodePos(Vec3.ZERO));
+
+        console.log('Tọa độ thế giới của node:', this._canonWorldPos, this.node.position);
     }
 
     onMouseMove(e: EventMouse | EventTouch) {
@@ -52,10 +57,12 @@ export class Cannon extends BaseComponent {
         this._velocity = new Vec2(this._mouseNodePos.x, this._mouseNodePos.y).normalize().multiplyScalar(100);
 
         this._graphics.clear();
-        this.raycastInit(this._canonWorldPos, mousePosWorld);
+        this.raycastInit(this._canonWorldPos, this._mouseNodePos);
     }
 
     onTouchEnd() {
+        return;
+
         const bubble = instantiate(this.bubblePrefab);
         bubble.parent = this.nodeParent;
         bubble.position = this.node.position;
@@ -74,20 +81,35 @@ export class Cannon extends BaseComponent {
     }
 
     raycastInit(source: Vec3, target: Vec3) {
-        this.drawLine(Vec3.ZERO, this._mouseNodePos);
+        const offsetLine = this.getDirLine(target);
 
-        const results = PhysicsSystem2D.instance.raycast(source, target, ERaycast2DType.Closest);
+        const offsetTarget = offsetLine.clone().add(source.clone());
+        this.drawLine(Vec3.ZERO, offsetLine);
+
+        const results = PhysicsSystem2D.instance.raycast(source, offsetTarget, ERaycast2DType.Closest);
 
         if (results.length > 0) {
             const posWorld = new Vec3(results[0].point.x, results[0].point.y);
             const pointPosNode = this.node.getComponent(UITransform).convertToNodeSpaceAR(posWorld);
 
-            this.point.position = pointPosNode.add(this.node.position);
+            this.point.position = pointPosNode;
 
-            console.log(`pos node: ${pointPosNode} ${results[0].collider.node.name}`);
+            console.log(`${results[0].collider.node.name} ${offsetTarget}`);
         } else {
             console.log('Không có va chạm');
         }
+    }
+
+    getDirLine(pos: Vec3): Vec3 {
+        const dir = Math.abs(pos.x) > Math.abs(pos.y)
+            ? new Vec3(pos.x / Math.abs(pos.x), pos.y / Math.abs(pos.x))
+            : new Vec3(pos.x / Math.abs(pos.y), pos.y / Math.abs(pos.y));
+
+        return dir.multiplyScalar(900);
+    }
+
+    getScreenPosFromWorldPos(worldPos: Vec3): Vec3 {
+        return this.camera.worldToScreen(worldPos);;
     }
 
     getWorldPosFromNodePos(nodePos: Vec3): Vec3 {

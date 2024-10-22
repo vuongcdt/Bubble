@@ -1,4 +1,4 @@
-import { _decorator, Camera, Color, EPhysics2DDrawFlags, ERaycast2DType, EventMouse, EventTouch, Graphics, input, Input, instantiate, math, Node, PhysicsSystem2D, Prefab, randomRangeInt, Sprite, UITransform, Vec2, Vec3 } from 'cc';
+import { _decorator, Camera, Color, EPhysics2DDrawFlags, ERaycast2DType, EventMouse, EventTouch, Graphics, input, Input, instantiate, math, Node, PhysicsSystem2D, Prefab, randomRangeInt, Sprite, UITransform, v3, Vec2, Vec3 } from 'cc';
 import { Bubble } from './Bubble';
 import { BaseComponent } from './BaseComponent';
 import { COLORS } from '../CONSTANTS';
@@ -61,8 +61,6 @@ export class Cannon extends BaseComponent {
     }
 
     onTouchEnd() {
-        return;
-
         const bubble = instantiate(this.bubblePrefab);
         bubble.parent = this.nodeParent;
         bubble.position = this.node.position;
@@ -94,7 +92,12 @@ export class Cannon extends BaseComponent {
 
             this.point.position = pointPosNode;
 
-            console.log(`${results[0].collider.node.name} ${offsetTarget}`);
+            const posCurrent = pointPosNode.clone().subtract(source.clone());
+            const nextLine = new Vec3(-offsetLine.x, offsetLine.y);
+            this.drawLine(posCurrent, nextLine);
+
+            // console.log(`${results[0].collider.node.name} ${offsetTarget}`);
+            console.log(`${results[0].collider.node.name} ${nextLine}`);
         } else {
             console.log('Không có va chạm');
         }

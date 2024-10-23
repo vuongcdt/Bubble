@@ -1,8 +1,8 @@
-import { _decorator, CircleCollider2D, Collider2D, Color, Contact2DType, ERigidBody2DType,IPhysics2DContact, math,randomRangeInt, RigidBody2D, Sprite, tween, Vec2, Vec3 } from 'cc';
+import { _decorator, CircleCollider2D, Collider2D, Color, Contact2DType, ERigidBody2DType, IPhysics2DContact, math, randomRangeInt, RigidBody2D, Sprite, tween, Vec2, Vec3 } from 'cc';
 import { BubbleType } from '../Enum';
 import { BaseComponent } from './BaseComponent';
 import { eventTarget } from '../Utils';
-import { DROP, UN_CHAIN } from '../Events';
+import { DROP, ON_MOVE_DOWN, UN_CHAIN } from '../Events';
 import { Wall } from './Wall';
 import Store from '../Store';
 import { COLORS } from '../CONSTANTS';
@@ -42,9 +42,9 @@ export class Bubble extends BaseComponent {
             this._collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
         }
 
-        // this.node.on(Node.EventType.TOUCH_START, this.checkChain, this);
         eventTarget.on(UN_CHAIN, this.onUnChain, this);
         eventTarget.on(DROP, this.onDrop, this);
+        eventTarget.on(ON_MOVE_DOWN, this.onMoveDown, this);
     }
 
     onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
@@ -67,11 +67,6 @@ export class Bubble extends BaseComponent {
 
         this._neighbors.push(otherBubble);
         this._rigibody.linearVelocity = Vec2.ZERO;
-
-        // if (this.node.name == 'bubble-shoot') {
-        //     console.log('this._neighbors.length', this._neighbors.length);
-        //     console.log(this.name, COLORS_TEXT[this._type], otherBubble.name, COLORS_TEXT[otherBubble._type]);
-        // }
 
         if (this.node.name != 'bubble-shoot' || !this._isShoot) {
             return;
@@ -103,6 +98,7 @@ export class Bubble extends BaseComponent {
         setTimeout(() => {
             this.node.position = new Vec3(posNeighbor.x - offsetPos.x, posNeighbor.y - offsetPos.y);
             setTimeout(() => {
+                this.onMoveDown()
                 this.checkChain();
             }, 50);
         }, 0);
@@ -142,8 +138,7 @@ export class Bubble extends BaseComponent {
         this._store.sameType = [];
         this._store.neighbors = [];
         eventTarget.emit(UN_CHAIN);
-        
-        // console.log('this._store.sameType', this._store.sameType);
+
         this.findNeighborsSameType();
 
         setTimeout(() => {
@@ -191,8 +186,6 @@ export class Bubble extends BaseComponent {
         }
 
         if (this._store.sameType.length < 3) {
-            // console.log('sameType.length < 3');
-            
             return;
         }
 
@@ -202,6 +195,13 @@ export class Bubble extends BaseComponent {
 
         tween(this.node)
             .to(0.5, { position: this.getPosTarget() })
+            .removeSelf()
+            .start();
+    }
+
+    onMoveDown() {
+        const target = new Vec3(this.node.position.x, this.node.position.y - 3000);
+        tween(this.node).to(200, { position: target })
             .removeSelf()
             .start();
     }

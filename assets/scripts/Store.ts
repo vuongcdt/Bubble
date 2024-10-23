@@ -11,6 +11,7 @@ export default class Store {
     public bubbles: Bubble[] = [];
     public endBubble: Bubble;
     public graphics: Graphics;
+    public distanceBubble: number = 0;
 
     private constructor() { }
 

@@ -29,8 +29,6 @@ export class UIManager extends BaseComponent {
 
         input.on(Input.EventType.MOUSE_MOVE, this.onMouseMove, this)
         input.on(Input.EventType.TOUCH_MOVE, this.onMouseMove, this);
-        input.on(Input.EventType.TOUCH_END, this.onTouchEnd, this);
-
     }
 
     onMouseMove(e: EventMouse | EventTouch) {
@@ -47,28 +45,25 @@ export class UIManager extends BaseComponent {
         this.raycastInit(this._canonWorldPos, dirScalar);
     }
 
-    onTouchEnd() {
-
-    }
-
     raycastInit(source: Vec3, targetNodePos: Vec3) {
         const target = this.getWorldPosFromNodePos(targetNodePos);
         const results = PhysicsSystem2D.instance.raycast(source, target, ERaycast2DType.Closest);
-        if (results.length > 0) {
-            const pointWorld = new Vec3(results[0].point.x, results[0].point.y);
-            const pointNode = this.getNodePosFromWorldPos(pointWorld);
 
-            this.point.position = pointNode;
-            const distance = this._totalLength - Vec3.distance(pointNode, this._canonNodePos);
+        if (results.length == 0) {
+            return;
+        } 
 
-            const subtract = targetNodePos.clone().subtract(pointNode.clone());
-            const nextPos = pointNode.clone().add(new Vec3(-subtract.x, subtract.y));
-            this.pointEnd.position = nextPos;
+        const pointWorld = new Vec3(results[0].point.x, results[0].point.y);
+        const pointNode = this.getNodePosFromWorldPos(pointWorld);
 
-            this.drawBrokenLine(pointNode, nextPos, distance);
-        } else {
-            console.log('Không có va chạm');
-        }
+        this.point.position = pointNode;
+        const distance = this._totalLength - Vec3.distance(pointNode, this._canonNodePos);
+
+        const subtract = targetNodePos.clone().subtract(pointNode.clone());
+        const nextPos = pointNode.clone().add(new Vec3(-subtract.x, subtract.y));
+        this.pointEnd.position = nextPos;
+
+        this.drawBrokenLine(pointNode, nextPos, distance);
     }
 
     drawBrokenLine(source: Vec3, target: Vec3, length: number) {

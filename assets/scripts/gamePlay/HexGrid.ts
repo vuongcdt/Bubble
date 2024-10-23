@@ -1,6 +1,8 @@
 import { _decorator,Vec3, Prefab, instantiate, Label, randomRangeInt } from 'cc';
 import { Bubble } from './Bubble';
 import { BaseComponent } from './BaseComponent';
+import { eventTarget } from '../Utils';
+import { ON_MOVE_DOWN } from '../Events';
 const { ccclass, property } = _decorator;
 
 @ccclass('HexGrid')
@@ -19,6 +21,8 @@ export class HexGrid extends BaseComponent {
 
     createHexGrid() {
         const sqrt3 = Math.sqrt(3);
+        this._store.distanceBubble = this._hexRadius * 1.5;
+        
         for (let row = 0; row < this._rows; row++) {
             for (let col = 0; col < this._cols; col++) {
                 if (row % 2 != 0 && col == this._cols - 1) {
@@ -54,6 +58,7 @@ export class HexGrid extends BaseComponent {
         setTimeout(() => {
             this._store.bubbles.forEach(bubble => {
                 bubble.setPhysicStatic();
+                eventTarget.emit(ON_MOVE_DOWN);
             });
         }, 0);
     }

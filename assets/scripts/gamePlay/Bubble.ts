@@ -1,11 +1,11 @@
-import { _decorator, CircleCollider2D, Collider2D, Color, Contact2DType, ERigidBody2DType, game, IPhysics2DContact, math, Node, randomRangeInt, RigidBody2D, Sprite, tween, Vec2, Vec3 } from 'cc';
+import { _decorator, CircleCollider2D, Collider2D, Color, Contact2DType, ERigidBody2DType,IPhysics2DContact, math,randomRangeInt, RigidBody2D, Sprite, tween, Vec2, Vec3 } from 'cc';
 import { BubbleType } from '../Enum';
 import { BaseComponent } from './BaseComponent';
 import { eventTarget } from '../Utils';
 import { DROP, UN_CHAIN } from '../Events';
 import { Wall } from './Wall';
 import Store from '../Store';
-import { COLORS, COLORS_TEXT } from '../CONSTANTS';
+import { COLORS } from '../CONSTANTS';
 const { ccclass, property } = _decorator;
 
 @ccclass('Bubble')

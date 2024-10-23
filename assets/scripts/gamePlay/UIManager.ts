@@ -1,4 +1,4 @@
-import { _decorator, BoxCollider2D, Camera, Color, ERaycast2DType, EventMouse, EventTouch, Graphics, input, Input, math, Node, PhysicsSystem2D, UITransform, v2, v3, Vec2, Vec3 } from 'cc';
+import { _decorator, Camera, Color, ERaycast2DType, EventMouse, EventTouch, Graphics, input, Input, Node, PhysicsSystem2D, UITransform, Vec3 } from 'cc';
 import { BaseComponent } from './BaseComponent';
 const { ccclass, property } = _decorator;
 
@@ -6,6 +6,8 @@ const { ccclass, property } = _decorator;
 export class UIManager extends BaseComponent {
     @property(Node)
     point: Node = null;
+    @property(Node)
+    pointEnd: Node = null;
     @property(Node)
     canon: Node = null;
     @property(Camera)
@@ -15,14 +17,15 @@ export class UIManager extends BaseComponent {
     private _canonWorldPos: Vec3 = Vec3.ZERO;
     private _canonNodePos: Vec3 = Vec3.ZERO;
     private _mouseNodePos: Vec3 = Vec3.ZERO;
-    private _totalLength: number = 1200;
+    private _totalLength: number = 800;
     private _startColor = new Color(255, 255, 0, 255);
-    private _dashLength = 20;
-    private _gapLength = 20;
+    private _dashLength = 50;
+    private _gapLength = 30;
 
     start() {
         this._graphics = this.getComponent(Graphics);
         this._canonNodePos = this.canon.position;
+        this._canonWorldPos = this.canon.getWorldPosition();
 
         input.on(Input.EventType.MOUSE_MOVE, this.onMouseMove, this)
         input.on(Input.EventType.TOUCH_MOVE, this.onMouseMove, this);
@@ -40,28 +43,57 @@ export class UIManager extends BaseComponent {
 
         const dirScalar = this.getDirScalar(this._canonNodePos, this._mouseNodePos);
 
-        // this.drawJoin(this._canonNodePos, dirScalar);
-        this.drawLine(this._canonNodePos, dirScalar);
-        this.raycastInit(this._canonWorldPos, this.getWorldPosFromNodePos(dirScalar));
-        // this.raycastInit(this._canonNodePos, dirScalar);
+        this.drawBrokenLine(this._canonNodePos, dirScalar, this._totalLength);
+        this.raycastInit(this._canonWorldPos, dirScalar);
     }
 
     onTouchEnd() {
 
     }
 
-    raycastInit(source: Vec3, target: Vec3) {
-        const results = PhysicsSystem2D.instance.raycast(source, target, ERaycast2DType.All);
-
+    raycastInit(source: Vec3, targetNodePos: Vec3) {
+        const target = this.getWorldPosFromNodePos(targetNodePos);
+        const results = PhysicsSystem2D.instance.raycast(source, target, ERaycast2DType.Closest);
         if (results.length > 0) {
-            const posWorld = new Vec3(results[0].point.x, results[0].point.y);
-            const posNode = this.getNodePosFromWorldPos(posWorld);
+            const pointWorld = new Vec3(results[0].point.x, results[0].point.y);
+            const pointNode = this.getNodePosFromWorldPos(pointWorld);
 
-            this.point.position = posNode;
+            this.point.position = pointNode;
+            const distance = this._totalLength - Vec3.distance(pointNode, this._canonNodePos);
 
-            console.log(`Đã va chạm: ${posNode} ${results[0].collider.node.name}`);
+            const subtract = targetNodePos.clone().subtract(pointNode.clone());
+            const nextPos = pointNode.clone().add(new Vec3(-subtract.x, subtract.y));
+            this.pointEnd.position = nextPos;
+
+            this.drawBrokenLine(pointNode, nextPos, distance);
         } else {
             console.log('Không có va chạm');
+        }
+    }
+
+    drawBrokenLine(source: Vec3, target: Vec3, length: number) {
+        this._graphics.lineWidth = 5;
+
+        const startColor = this._startColor;
+        const dashLength = this._dashLength;
+        const gapLength = this._gapLength;
+
+        const dir = target.clone().subtract(source).normalize();
+
+        let i = length % (dashLength + gapLength) - gapLength;
+        for (; i < length; i += dashLength + gapLength) {
+            let alpha = 255 * (1 - i / this._totalLength);
+            if (length < this._totalLength) {
+                alpha = 255 * (1 - (i + this._totalLength - length) / this._totalLength);
+            }
+            const start = dir.clone().multiplyScalar(i).add(source);
+            const end = dir.clone().multiplyScalar(i + dashLength).add(source);
+
+            this._graphics.strokeColor = new Color(startColor.r, startColor.g, startColor.b, alpha);
+            this._graphics.moveTo(start.x, start.y);
+            this._graphics.lineTo(end.x, end.y);
+
+            this._graphics.stroke();
         }
     }
 
@@ -82,29 +114,6 @@ export class UIManager extends BaseComponent {
 
     getNodePosFromWorldPos(worldPos: Vec3): Vec3 {
         return this.node.getComponent(UITransform).convertToNodeSpaceAR(worldPos);
-    }
-
-    drawJoin(source: Vec3, target: Vec3) {
-        this._graphics.lineWidth = 5;
-
-        const startColor = this._startColor;
-        const dashLength = this._dashLength;
-        const gapLength = this._gapLength;
-        const totalLength = this._totalLength;
-
-        const dir = target.clone().subtract(source).normalize();
-
-        for (let i = 0; i < totalLength; i += dashLength + gapLength) {
-            const alpha = 255 * (1 - i / totalLength);
-            const start = dir.clone().multiplyScalar(i).add(source);
-            const end = dir.clone().multiplyScalar(i + dashLength).add(source);
-
-            this._graphics.strokeColor = new Color(startColor.r, startColor.g, startColor.b, alpha);
-            this._graphics.moveTo(start.x, start.y);
-            this._graphics.lineTo(end.x, end.y);
-
-            this._graphics.stroke();
-        }
     }
 
     drawLine(source: Vec3, target: Vec3) {

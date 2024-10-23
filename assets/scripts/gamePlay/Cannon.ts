@@ -23,8 +23,6 @@ export class Cannon extends BaseComponent {
 
     private _velocity: Vec2 = Vec2.ZERO;
     private _type: number = 0;
-    private _graphics: Graphics;
-    private _canonWorldPos: Vec3;
     private _mouseNodePos: Vec3;
 
     start() {
@@ -35,15 +33,8 @@ export class Cannon extends BaseComponent {
         input.on(Input.EventType.MOUSE_MOVE, this.onMouseMove, this)
         input.on(Input.EventType.TOUCH_MOVE, this.onMouseMove, this);
         input.on(Input.EventType.TOUCH_END, this.onTouchEnd, this);
-        this._graphics = this.getComponent(Graphics);
 
         this.setNextBubble();
-
-        this._canonWorldPos = this.getWorldPosFromNodePos(this.node.position);
-        console.log('canvas', this.canvas.position);
-        // console.log(this.getWorldPosFromNodePos(Vec3.ZERO));
-
-        console.log('Tọa độ thế giới của node:', this._canonWorldPos, this.node.position);
     }
 
     onMouseMove(e: EventMouse | EventTouch) {
@@ -55,9 +46,6 @@ export class Cannon extends BaseComponent {
 
         this.gun.angle = angleInDegrees;
         this._velocity = new Vec2(this._mouseNodePos.x, this._mouseNodePos.y).normalize().multiplyScalar(100);
-
-        this._graphics.clear();
-        this.raycastInit(this._canonWorldPos, this._mouseNodePos);
     }
 
     onTouchEnd() {
@@ -78,31 +66,6 @@ export class Cannon extends BaseComponent {
         this.spriteNextBubble.color = COLORS[this._type];
     }
 
-    raycastInit(source: Vec3, target: Vec3) {
-        const offsetLine = this.getDirLine(target);
-
-        const offsetTarget = offsetLine.clone().add(source.clone());
-        this.drawLine(Vec3.ZERO, offsetLine);
-
-        const results = PhysicsSystem2D.instance.raycast(source, offsetTarget, ERaycast2DType.Closest);
-
-        if (results.length > 0) {
-            const posWorld = new Vec3(results[0].point.x, results[0].point.y);
-            const pointPosNode = this.node.getComponent(UITransform).convertToNodeSpaceAR(posWorld);
-
-            this.point.position = pointPosNode;
-
-            const posCurrent = pointPosNode.clone().subtract(source.clone());
-            const nextLine = new Vec3(-offsetLine.x, offsetLine.y);
-            this.drawLine(posCurrent, nextLine);
-
-            // console.log(`${results[0].collider.node.name} ${offsetTarget}`);
-            console.log(`${results[0].collider.node.name} ${nextLine}`);
-        } else {
-            console.log('Không có va chạm');
-        }
-    }
-
     getDirLine(pos: Vec3): Vec3 {
         const dir = Math.abs(pos.x) > Math.abs(pos.y)
             ? new Vec3(pos.x / Math.abs(pos.x), pos.y / Math.abs(pos.x))
@@ -121,40 +84,6 @@ export class Cannon extends BaseComponent {
 
     getNodePosFromWorldPos(worldPos: Vec3): Vec3 {
         return this.node.getComponent(UITransform).convertToNodeSpaceAR(worldPos);
-    }
-
-    drawJoin(source: Vec3, target: Vec3) {
-        this._graphics.lineWidth = 7;
-
-        const startColor = new Color(255, 0, 0, 255);
-        const dashLength = 50;
-        const gapLength = 50;
-        const totalLength = 2000;
-
-        const dir = target.normalize();
-
-        for (let i = 0; i < totalLength; i += dashLength + gapLength) {
-            const alpha = 255 * (1 - i / totalLength);
-            const start = dir.clone().multiplyScalar(i);
-            const end = dir.clone().multiplyScalar(i + dashLength);
-
-            this._graphics.strokeColor = new Color(startColor.r, startColor.g, startColor.b, alpha);
-            this._graphics.moveTo(start.x, start.y);
-            this._graphics.lineTo(end.x, end.y);
-
-            this._graphics.stroke();
-        }
-
-    }
-
-    drawLine(source: Vec3, target: Vec3) {
-        this._graphics.lineWidth = 7;
-
-        this._graphics.strokeColor = new Color(255, 0, 0, 255);
-        this._graphics.moveTo(source.x, source.y);
-        this._graphics.lineTo(target.x, target.y);
-
-        this._graphics.stroke();
     }
 }
 

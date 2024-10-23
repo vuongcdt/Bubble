@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Vec3, Prefab, instantiate, Label, randomRange, randomRangeInt, Graphics } from 'cc';
+import { _decorator,Vec3, Prefab, instantiate, Label, randomRangeInt } from 'cc';
 import { Bubble } from './Bubble';
 import { BaseComponent } from './BaseComponent';
 const { ccclass, property } = _decorator;

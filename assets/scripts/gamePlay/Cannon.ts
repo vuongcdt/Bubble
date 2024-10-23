@@ -1,4 +1,4 @@
-import { _decorator, Camera, Color, EPhysics2DDrawFlags, ERaycast2DType, EventMouse, EventTouch, Graphics, input, Input, instantiate, math, Node, PhysicsSystem2D, Prefab, randomRangeInt, Sprite, UITransform, v3, Vec2, Vec3 } from 'cc';
+import { _decorator, Camera, Color, ERaycast2DType, EventMouse, EventTouch, Graphics, input, Input, instantiate, math, Node, PhysicsSystem2D, Prefab, randomRangeInt, Sprite, UITransform,  Vec2, Vec3 } from 'cc';
 import { Bubble } from './Bubble';
 import { BaseComponent } from './BaseComponent';
 import { COLORS } from '../CONSTANTS';

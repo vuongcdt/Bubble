@@ -72,8 +72,9 @@ export class Bubble extends BaseComponent {
         if (this.node.name != 'bubble-shoot' || !this._isShoot) {
             return;
         }
-        this._velocity =  Vec2.ZERO;
+        this._velocity = Vec2.ZERO;
         this._rigibody.linearVelocity = Vec2.ZERO;
+        console.log('bubble', otherBubble.name);
 
         const p1 = otherBubble.node.position;
         const p2 = this.node.position;

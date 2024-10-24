@@ -20,7 +20,7 @@ export class Cannon extends BaseComponent {
     private _velocity: Vec2 = Vec2.ZERO;
     private _type: number = 0;
     private _mouseNodePos: Vec3;
-    private _speed: number = 50;
+    private _speed: number = 80;
 
     start() {
         super.start();

@@ -5,10 +5,6 @@ const { ccclass, property } = _decorator;
 @ccclass('UIManager')
 export class UIManager extends BaseComponent {
     @property(Node)
-    point: Node = null;
-    @property(Node)
-    pointEnd: Node = null;
-    @property(Node)
     canon: Node = null;
     @property(Camera)
     camera: Camera = null;
@@ -56,12 +52,10 @@ export class UIManager extends BaseComponent {
         const pointWorld = new Vec3(results[0].point.x, results[0].point.y);
         const pointNode = this.getNodePosFromWorldPos(pointWorld);
 
-        this.point.position = pointNode;
         const distance = this._totalLength - Vec3.distance(pointNode, this._canonNodePos);
 
         const subtract = targetNodePos.clone().subtract(pointNode.clone());
         const nextPos = pointNode.clone().add(new Vec3(-subtract.x, subtract.y));
-        this.pointEnd.position = nextPos;
 
         this.drawBrokenLine(pointNode, nextPos, distance);
     }

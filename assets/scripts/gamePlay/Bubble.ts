@@ -2,7 +2,7 @@ import { _decorator, CircleCollider2D, Collider2D, Color, Contact2DType, ERigidB
 import { BubbleType } from '../Enum';
 import { BaseComponent } from './BaseComponent';
 import { eventTarget } from '../Utils';
-import { DROP, ON_MOVE_DOWN, UN_CHAIN } from '../Events';
+import { ADD_BUBBLE, DROP, ON_MOVE_DOWN, UN_CHAIN } from '../Events';
 import { Wall } from './Wall';
 import Store from '../Store';
 import { COLORS } from '../CONSTANTS';
@@ -122,6 +122,7 @@ export class Bubble extends BaseComponent {
 
         this._rigibody = this.getComponent(RigidBody2D);
         this._velocity = velocity;
+
         this._rigibody.linearVelocity = velocity;
         this._isShoot = true;
         this._store = Store.getInstance();
@@ -200,10 +201,18 @@ export class Bubble extends BaseComponent {
     }
 
     onMoveDown() {
-        const target = new Vec3(this.node.position.x, this.node.position.y - 3000);
-        tween(this.node).to(200, { position: target })
-            .removeSelf()
+        const target = new Vec3(this.node.position.x, this.node.position.y - this._store.distanceBubble);
+        tween(this.node).to(5, { position: target })
+            .call(() => this.nextMove())
             .start();
+    }
+
+    nextMove() {
+        if (this._store.endBubble.name != this.name) {
+            return;
+        }
+
+        eventTarget.emit(ADD_BUBBLE);
     }
 
     setPhysicStatic() {

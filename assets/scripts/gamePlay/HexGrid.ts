@@ -1,4 +1,4 @@
-import { _decorator, Vec3, Prefab, instantiate, Label, randomRangeInt, game } from 'cc';
+import { _decorator, Vec3, Prefab, instantiate, Label, randomRangeInt, game, Node } from 'cc';
 import { Bubble } from './Bubble';
 import { BaseComponent } from './BaseComponent';
 import { eventTarget } from '../Utils';
@@ -8,7 +8,7 @@ const { ccclass, property } = _decorator;
 @ccclass('HexGrid')
 export class HexGrid extends BaseComponent {
     @property({ type: Prefab })
-    hexPrefab: Prefab = null!;
+    private hexPrefab: Prefab = null!;
 
     private _rowIndex: number = 0;
     private _rows: number = 6;
@@ -18,7 +18,7 @@ export class HexGrid extends BaseComponent {
 
     start() {
         super.start();
-        eventTarget.on(ADD_BUBBLE, () => this.addBubble());
+        eventTarget.on(ADD_BUBBLE, this.addBubble, this);
         this._store.distanceBubble = this._hexRadius * 1.5 * 2;
         this.addBubble();
         this._distance += this._store.distanceBubble * (this._rows - 2) / 2;

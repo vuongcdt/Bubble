@@ -1,4 +1,4 @@
-import { _decorator, Camera, EventMouse, EventTouch, input, Input, instantiate, math, Node, Prefab, randomRangeInt, Sprite, UITransform, Vec2, Vec3 } from 'cc';
+import { _decorator, Camera, EventMouse, EventTouch, input, Input, instantiate, Label, math, Node, Prefab, randomRangeInt, Sprite, UITransform, Vec2, Vec3 } from 'cc';
 import { Bubble } from './Bubble';
 import { BaseComponent } from './BaseComponent';
 import { COLORS } from '../CONSTANTS';
@@ -20,7 +20,7 @@ export class Cannon extends BaseComponent {
     private _velocity: Vec2 = Vec2.ZERO;
     private _type: number = 0;
     private _mouseNodePos: Vec3;
-    private _speed: number = 70;
+    private _speed: number = 50;
 
     start() {
         super.start();
@@ -44,13 +44,13 @@ export class Cannon extends BaseComponent {
     }
 
     onTouchEnd() {
-        console.log(this._store.endBubble.name);
-        
+        console.clear();
         const bubble = instantiate(this.bubblePrefab);
         bubble.parent = this.nodeParent;
         bubble.position = this.node.position;
 
         bubble.name = 'bubble-shoot';
+        bubble.getComponentInChildren(Label).string = `bs`;
         const newBubble = bubble.getComponent(Bubble);
 
         newBubble.initShoot(this._type, this._velocity);

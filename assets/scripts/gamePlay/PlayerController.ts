@@ -1,4 +1,4 @@
-import { _decorator, Camera, Color, ERaycast2DType, EventMouse, EventTouch, Graphics, input, Input, Node, PhysicsSystem2D, UITransform, Vec3 } from 'cc';
+import { _decorator, Button, Camera, Color, ERaycast2DType, EventMouse, EventTouch, game, Graphics, input, Input, Node, PhysicsSystem2D, UITransform, Vec3 } from 'cc';
 import { BaseComponent } from './BaseComponent';
 import { Wall } from './Wall';
 const { ccclass, property } = _decorator;
@@ -6,9 +6,11 @@ const { ccclass, property } = _decorator;
 @ccclass('PlayerController')
 export class PlayerController extends BaseComponent {
     @property(Node)
-    canon: Node = null;
+    private canon: Node = null;
+    @property(Node)
+    private pauseBtn: Node = null;
     @property(Camera)
-    camera: Camera = null;
+    private camera: Camera = null;
 
     private _graphics: Graphics;
     private _canonWorldPos: Vec3 = Vec3.ZERO;
@@ -18,6 +20,7 @@ export class PlayerController extends BaseComponent {
     private _startColor = new Color(255, 255, 0, 255);
     private _dashLength = 50;
     private _gapLength = 30;
+    private _isPause = false;
 
     start() {
         this._graphics = this.getComponent(Graphics);
@@ -26,6 +29,17 @@ export class PlayerController extends BaseComponent {
 
         input.on(Input.EventType.MOUSE_MOVE, this.onMouseMove, this)
         input.on(Input.EventType.TOUCH_MOVE, this.onMouseMove, this);
+        this.pauseBtn.on('click', this.togglePauseGame, this);
+    }
+
+    togglePauseGame() {
+        this._isPause = !this._isPause;
+        if (this._isPause) {
+            game.pause();
+        }
+        else {
+            game.resume();
+        };
     }
 
     onMouseMove(e: EventMouse | EventTouch) {
@@ -77,9 +91,9 @@ export class PlayerController extends BaseComponent {
 
         let i = length % (dashLength + gapLength) - gapLength;
         for (; i < length; i += dashLength + gapLength) {
-            let alpha = 255 * (1 - i / this._totalLength);
+            let alpha = 255 * (1 - i * 0.8 / this._totalLength);
             if (length < this._totalLength) {
-                alpha = 255 * (1 - (i + this._totalLength - length) / this._totalLength);
+                alpha = 255 * (1 - (i + this._totalLength - length) * 0.8 / this._totalLength);
             }
             const start = dir.clone().multiplyScalar(i).add(source);
             const end = dir.clone().multiplyScalar(i + dashLength).add(source);

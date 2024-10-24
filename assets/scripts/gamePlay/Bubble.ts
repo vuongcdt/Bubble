@@ -1,4 +1,4 @@
-import { _decorator, CircleCollider2D, Collider2D, Color, Contact2DType, ERigidBody2DType, IPhysics2DContact, math, randomRangeInt, RigidBody2D, Sprite, tween, Vec2, Vec3 } from 'cc';
+import { _decorator, CircleCollider2D, Collider2D, Color, Contact2DType, ERigidBody2DType, IPhysics2DContact, math, Node, randomRangeInt, RigidBody2D, Sprite, tween, Vec2, Vec3 } from 'cc';
 import { BubbleType } from '../Enum';
 import { BaseComponent } from './BaseComponent';
 import { eventTarget } from '../Utils';
@@ -10,10 +10,9 @@ const { ccclass, property } = _decorator;
 
 @ccclass('Bubble')
 export class Bubble extends BaseComponent {
-    
     @property(Sprite)
     private spriteChain: Sprite;
-    
+
     private _isEndRow: boolean;
     private _isShoot: boolean;
     private _neighbors: Bubble[] = [];
@@ -22,6 +21,7 @@ export class Bubble extends BaseComponent {
     private _rigibody: RigidBody2D;
     private _isChain: boolean = false;
     private _velocity: Vec2 = Vec2.ZERO;
+
     private _neighborPosList: Vec3[] = [
         new Vec3(83.13843876330611, 0),
         new Vec3(-83.13843876330611, 0),
@@ -68,11 +68,12 @@ export class Bubble extends BaseComponent {
         }
 
         this._neighbors.push(otherBubble);
-        this._rigibody.linearVelocity = Vec2.ZERO;
 
         if (this.node.name != 'bubble-shoot' || !this._isShoot) {
             return;
         }
+        this._velocity =  Vec2.ZERO;
+        this._rigibody.linearVelocity = Vec2.ZERO;
 
         const p1 = otherBubble.node.position;
         const p2 = this.node.position;
@@ -89,7 +90,7 @@ export class Bubble extends BaseComponent {
                 break;
             }
 
-            if (angle <= anglePos + 30 && angle > anglePos - 30) {
+            if (index >= 2 && angle <= anglePos + 30 && angle > anglePos - 30) {
                 this.setPosition(p1, offsetPos)
                 break;
             }
@@ -100,23 +101,10 @@ export class Bubble extends BaseComponent {
         setTimeout(() => {
             this.node.position = new Vec3(posNeighbor.x - offsetPos.x, posNeighbor.y - offsetPos.y);
             setTimeout(() => {
-                this.onMoveDown()
                 this.checkChain();
+                this.onMoveDown()
             }, 50);
         }, 0);
-    }
-
-    onEndContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
-        if (!otherCollider) {
-            return;
-        }
-
-        const otherBubble = otherCollider.getComponent(Bubble);
-        if (!otherBubble) {
-            return;
-        }
-
-        this._neighbors = this._neighbors.filter(neighborBubble => neighborBubble != otherBubble);
     }
 
     initShoot(type: BubbleType, velocity: Vec2) {
@@ -131,9 +119,9 @@ export class Bubble extends BaseComponent {
         this.node.name = 'bubble-shoot';
     }
 
-    setEndRow(){
+    setEndRow() {
         this._isEndRow = true;
-        eventTarget.on(CLEAR_END_ROW_BUBBLE,()=>this.clearEndRowBubble());
+        eventTarget.on(CLEAR_END_ROW_BUBBLE, () => this.clearEndRowBubble());
     }
 
     setType(type: BubbleType) {
@@ -197,12 +185,12 @@ export class Bubble extends BaseComponent {
             return;
         }
 
-        if(this._isEndRow){
+        if (this._isEndRow) {
             return;
         }
 
         this._neighbors
-            // .filter(neighborBubble => neighborBubble._type != this._type)
+            .filter(neighborBubble => neighborBubble._type != this._type)
             .forEach(neighborBubble => neighborBubble.clearBubbleInNeighborsOfDifferentTypeBubble(this));
 
         tween(this.node)
@@ -214,12 +202,12 @@ export class Bubble extends BaseComponent {
     onMoveDown() {
         // return;
         const target = new Vec3(this.node.position.x, this.node.position.y - this._store.distanceBubble);
-        tween(this.node).to(20, { position: target })
+        tween(this.node).to(30, { position: target })
             .call(() => this.nextMove())
             .start();
     }
 
-    clearEndRowBubble(){
+    clearEndRowBubble() {
         this._isEndRow = false;
     }
 

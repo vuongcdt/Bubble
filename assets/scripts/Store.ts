@@ -1,4 +1,4 @@
-import { _decorator, Component, Graphics, Node } from 'cc';
+import { _decorator, Component, Graphics, Node, Vec3 } from 'cc';
 import { Bubble } from './gamePlay/Bubble';
 const { ccclass, property } = _decorator;
 

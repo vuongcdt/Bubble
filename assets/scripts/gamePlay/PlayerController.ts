@@ -1,5 +1,6 @@
 import { _decorator, Camera, Color, ERaycast2DType, EventMouse, EventTouch, Graphics, input, Input, Node, PhysicsSystem2D, UITransform, Vec3 } from 'cc';
 import { BaseComponent } from './BaseComponent';
+import { Wall } from './Wall';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerController')
@@ -13,7 +14,7 @@ export class PlayerController extends BaseComponent {
     private _canonWorldPos: Vec3 = Vec3.ZERO;
     private _canonNodePos: Vec3 = Vec3.ZERO;
     private _mouseNodePos: Vec3 = Vec3.ZERO;
-    private _totalLength: number = 800;
+    private _totalLength: number = 1200;
     private _startColor = new Color(255, 255, 0, 255);
     private _dashLength = 50;
     private _gapLength = 30;
@@ -46,6 +47,11 @@ export class PlayerController extends BaseComponent {
         const results = PhysicsSystem2D.instance.raycast(source, target, ERaycast2DType.Closest);
 
         if (results.length == 0) {
+            return;
+        }
+
+        const isWall = results[0].collider.getComponent(Wall);
+        if (!isWall) {
             return;
         }
 

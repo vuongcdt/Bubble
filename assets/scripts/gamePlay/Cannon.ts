@@ -20,6 +20,7 @@ export class Cannon extends BaseComponent {
     private _velocity: Vec2 = Vec2.ZERO;
     private _type: number = 0;
     private _mouseNodePos: Vec3;
+    private _speed: number = 70;
 
     start() {
         super.start();
@@ -39,10 +40,12 @@ export class Cannon extends BaseComponent {
         const angleInDegrees = math.toDegree(Math.atan2(this._mouseNodePos.y, this._mouseNodePos.x)) - 90;
 
         this.gun.angle = angleInDegrees;
-        this._velocity = new Vec2(this._mouseNodePos.x, this._mouseNodePos.y).normalize().multiplyScalar(100);
+        this._velocity = new Vec2(this._mouseNodePos.x, this._mouseNodePos.y).normalize().multiplyScalar(this._speed);
     }
 
     onTouchEnd() {
+        console.log(this._store.endBubble.name);
+        
         const bubble = instantiate(this.bubblePrefab);
         bubble.parent = this.nodeParent;
         bubble.position = this.node.position;

@@ -2,7 +2,7 @@ import { _decorator, CircleCollider2D, Collider2D, Color, Contact2DType, ERigidB
 import { BubbleType } from '../Enum';
 import { BaseComponent } from './BaseComponent';
 import { eventTarget } from '../Utils';
-import { ADD_BUBBLE, DROP, ON_MOVE_DOWN, UN_CHAIN } from '../Events';
+import { ADD_BUBBLE, CLEAR_END_ROW_BUBBLE, DROP, ON_MOVE_DOWN, UN_CHAIN } from '../Events';
 import { Wall } from './Wall';
 import Store from '../Store';
 import { COLORS } from '../CONSTANTS';
@@ -10,9 +10,11 @@ const { ccclass, property } = _decorator;
 
 @ccclass('Bubble')
 export class Bubble extends BaseComponent {
+    
     @property(Sprite)
     private spriteChain: Sprite;
-
+    
+    private _isEndRow: boolean;
     private _isShoot: boolean;
     private _neighbors: Bubble[] = [];
     private _type: BubbleType;
@@ -97,8 +99,8 @@ export class Bubble extends BaseComponent {
     setPosition(posNeighbor: Vec3, offsetPos: Vec3) {
         setTimeout(() => {
             this.node.position = new Vec3(posNeighbor.x - offsetPos.x, posNeighbor.y - offsetPos.y);
-            this.onMoveDown()
             setTimeout(() => {
+                this.onMoveDown()
                 this.checkChain();
             }, 50);
         }, 0);
@@ -127,6 +129,11 @@ export class Bubble extends BaseComponent {
         this._isShoot = true;
         this._store = Store.getInstance();
         this.node.name = 'bubble-shoot';
+    }
+
+    setEndRow(){
+        this._isEndRow = true;
+        eventTarget.on(CLEAR_END_ROW_BUBBLE,()=>this.clearEndRowBubble());
     }
 
     setType(type: BubbleType) {
@@ -190,8 +197,12 @@ export class Bubble extends BaseComponent {
             return;
         }
 
+        if(this._isEndRow){
+            return;
+        }
+
         this._neighbors
-            .filter(neighborBubble => neighborBubble._type != this._type)
+            // .filter(neighborBubble => neighborBubble._type != this._type)
             .forEach(neighborBubble => neighborBubble.clearBubbleInNeighborsOfDifferentTypeBubble(this));
 
         tween(this.node)
@@ -201,11 +212,15 @@ export class Bubble extends BaseComponent {
     }
 
     onMoveDown() {
-        return;
+        // return;
         const target = new Vec3(this.node.position.x, this.node.position.y - this._store.distanceBubble);
-        tween(this.node).to(5, { position: target })
+        tween(this.node).to(20, { position: target })
             .call(() => this.nextMove())
             .start();
+    }
+
+    clearEndRowBubble(){
+        this._isEndRow = false;
     }
 
     nextMove() {
@@ -226,7 +241,7 @@ export class Bubble extends BaseComponent {
     }
 
     getPosTarget() {
-        return new Vec3(this.node.position.x + randomRangeInt(-200, 200), randomRangeInt(-500, -1000));
+        return new Vec3(this.node.position.x + randomRangeInt(-200, 200), randomRangeInt(-1000, -1500));
     }
 
     getAngle(direction: Vec3): number {

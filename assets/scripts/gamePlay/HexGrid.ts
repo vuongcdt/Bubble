@@ -2,7 +2,7 @@ import { _decorator, Vec3, Prefab, instantiate, Label, randomRangeInt, game } fr
 import { Bubble } from './Bubble';
 import { BaseComponent } from './BaseComponent';
 import { eventTarget } from '../Utils';
-import { ADD_BUBBLE, ON_MOVE_DOWN } from '../Events';
+import { ADD_BUBBLE, CLEAR_END_ROW_BUBBLE, ON_MOVE_DOWN } from '../Events';
 const { ccclass, property } = _decorator;
 
 @ccclass('HexGrid')
@@ -11,7 +11,7 @@ export class HexGrid extends BaseComponent {
     hexPrefab: Prefab = null!;
 
     private _rowIndex: number = 0;
-    private _rows: number = 10;
+    private _rows: number = 6;
     private _cols: number = 12;
     private _hexRadius: number = 48;
     private _distance: number = 500;
@@ -27,6 +27,7 @@ export class HexGrid extends BaseComponent {
 
     addBubble() {
         const sqrt3 = Math.sqrt(3);
+        eventTarget.emit(CLEAR_END_ROW_BUBBLE);
 
         for (let row = 0; row < this._rows; row++) {
             for (let col = 0; col < this._cols; col++) {
@@ -54,6 +55,10 @@ export class HexGrid extends BaseComponent {
 
                 this._store.bubbles.push(bubble);
 
+                if (row == this._rows - 1) {
+                    bubble.setEndRow();
+                }
+
                 if (row == this._rows - 1 && col == 0) {
                     this._store.endBubble = bubble;
                 }
@@ -65,17 +70,8 @@ export class HexGrid extends BaseComponent {
             this._store.bubbles.forEach(bubble => {
                 bubble.setPhysicStatic();
             });
-            console.log('length', this._store.bubbles.length);
-
-            // test
-            this._count++;
-            if (this._count > 5) {
-                return;
-            }
-
             eventTarget.emit(ON_MOVE_DOWN);
         }, 0);
     }
-    private _count = 0;
 
 }

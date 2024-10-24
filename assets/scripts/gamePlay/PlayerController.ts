@@ -2,8 +2,8 @@ import { _decorator, Camera, Color, ERaycast2DType, EventMouse, EventTouch, Grap
 import { BaseComponent } from './BaseComponent';
 const { ccclass, property } = _decorator;
 
-@ccclass('UIManager')
-export class UIManager extends BaseComponent {
+@ccclass('PlayerController')
+export class PlayerController extends BaseComponent {
     @property(Node)
     canon: Node = null;
     @property(Camera)
@@ -47,7 +47,7 @@ export class UIManager extends BaseComponent {
 
         if (results.length == 0) {
             return;
-        } 
+        }
 
         const pointWorld = new Vec3(results[0].point.x, results[0].point.y);
         const pointNode = this.getNodePosFromWorldPos(pointWorld);

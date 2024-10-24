@@ -97,8 +97,8 @@ export class Bubble extends BaseComponent {
     setPosition(posNeighbor: Vec3, offsetPos: Vec3) {
         setTimeout(() => {
             this.node.position = new Vec3(posNeighbor.x - offsetPos.x, posNeighbor.y - offsetPos.y);
+            this.onMoveDown()
             setTimeout(() => {
-                this.onMoveDown()
                 this.checkChain();
             }, 50);
         }, 0);
@@ -201,6 +201,7 @@ export class Bubble extends BaseComponent {
     }
 
     onMoveDown() {
+        return;
         const target = new Vec3(this.node.position.x, this.node.position.y - this._store.distanceBubble);
         tween(this.node).to(5, { position: target })
             .call(() => this.nextMove())

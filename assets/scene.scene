@@ -1157,7 +1157,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "UIManager",
+    "_name": "PlayerController",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
